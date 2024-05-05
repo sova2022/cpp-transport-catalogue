@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <iostream>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
@@ -37,10 +38,10 @@ using StopsToBuses = typename std::unordered_map<Stop*, std::set<std::string_vie
 public:
 
 const Stop* FindStop(std::string_view stop_name) const;   
-void AddStop(std::string& stop, Coordinates coordinates);
+void AddStop(std::string stop, Coordinates coordinates);
 const Bus* FindBus(std::string_view bus) const;
-void AddBus(std::string& bus_name, const std::vector<std::string_view>& stops);
-Route GetRouteInfo(std::string_view bus) const;
+void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
+std::optional<Route> GetRouteInfo(std::string_view bus) const;
 std::set<std::string_view> FindStopsToBuses(std::string_view stop) const;
   
 private:
