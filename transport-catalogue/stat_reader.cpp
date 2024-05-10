@@ -13,7 +13,8 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
             output << "Bus "sv << bus << ": "sv;     
             output << transport_catalogue.GetRouteInfo(bus)->stops <<  " stops on route, "sv;
             output << transport_catalogue.GetRouteInfo(bus)->unique_stops <<  " unique stops, "sv;
-            output << transport_catalogue.GetRouteInfo(bus)->lenght <<  " route length"sv << std::endl;
+            output << transport_catalogue.GetRouteInfo(bus)->lenght << " route length, "sv;
+            output << transport_catalogue.GetRouteInfo(bus)->curvature << " curvature"sv << std::endl;
         }
     }
     if (request_type == "Stop"sv) {

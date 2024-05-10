@@ -27,6 +27,19 @@ struct Route {
   size_t stops;
   size_t unique_stops;
   double lenght;
+  double curvature;
+};
+
+struct Distance {
+    int meters;
+};
+
+struct StopPairHasher {
+    std::size_t operator()(const std::pair<const Stop*, const Stop*>& pair) const {
+        const void* p1 = static_cast<const void*>(pair.first);
+        const void* p2 = static_cast<const void*>(pair.second);
+        return std::hash<const void*>{}(p1) ^ std::hash<const void*>{}(p2);
+    }
 };
 
 class TransportCatalogue {
@@ -34,15 +47,19 @@ class TransportCatalogue {
 using Stops = typename std::unordered_map<std::string_view, Stop*>;
 using Buses = typename std::unordered_map<std::string_view, Bus*>;
 using StopsToBuses = typename std::unordered_map<Stop*, std::set<std::string_view>>;
+using StopPair = std::pair<const Stop*, const Stop*>;
+using Distances = std::unordered_map<StopPair, const Distance, StopPairHasher>;
     
 public:
+    const Stop* FindStop(std::string_view stop_name) const;   
+    void AddStop(std::string stop, Coordinates coordinates);
+    void AddStopDistance(std::string from_stop, const std::vector<std::pair<std::string_view, Distance>>& to_stops);
+    const Bus* FindBus(std::string_view bus) const;
+    void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
+    const Distance GetDistance(const Stop* from, const Stop* to) const;
+    std::optional<Route> GetRouteInfo(std::string_view bus) const;
+    std::set<std::string_view> FindStopsToBuses(std::string_view stop) const;
 
-const Stop* FindStop(std::string_view stop_name) const;   
-void AddStop(std::string stop, Coordinates coordinates);
-const Bus* FindBus(std::string_view bus) const;
-void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
-std::optional<Route> GetRouteInfo(std::string_view bus) const;
-std::set<std::string_view> FindStopsToBuses(std::string_view stop) const;
   
 private:
     std::deque<Stop> stops_;
@@ -50,4 +67,5 @@ private:
     Stops stopname_to_stop_;
     Buses busname_to_bus_;
     StopsToBuses stops_to_buses_;
+    Distances distances_;
 };
