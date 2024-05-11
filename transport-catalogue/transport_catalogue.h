@@ -53,10 +53,10 @@ using Distances = std::unordered_map<StopPair, const Distance, StopPairHasher>;
 public:
     const Stop* FindStop(std::string_view stop_name) const;   
     void AddStop(std::string stop, Coordinates coordinates);
-    void AddStopDistance(std::string from_stop, const std::vector<std::pair<std::string_view, Distance>>& to_stops);
+    void SetDistanceBetweenStops(std::string_view from_stop, std::string_view to_stop, Distance distance);
     const Bus* FindBus(std::string_view bus) const;
     void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
-    const Distance GetDistance(const Stop* from, const Stop* to) const;
+    Distance GetDistance(const Stop* from, const Stop* to) const;
     std::optional<Route> GetRouteInfo(std::string_view bus) const;
     std::set<std::string_view> FindStopsToBuses(std::string_view stop) const;
 

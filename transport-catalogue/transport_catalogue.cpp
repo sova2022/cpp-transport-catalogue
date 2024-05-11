@@ -20,14 +20,12 @@ void TransportCatalogue::AddStop(std::string stop, Coordinates coordinates) {
     }
 }
 
-void TransportCatalogue::AddStopDistance(std::string from_stop, const std::vector<std::pair<std::string_view, Distance>>& to_stops) {
+void TransportCatalogue::SetDistanceBetweenStops(std::string_view from_stop, std::string_view to_stop, Distance distance) {
     auto current_stop = FindStop(from_stop);
-    for (auto& [stop, dist] : to_stops) {
-        auto stop_to = FindStop(stop);
-        if (stop_to != nullptr) {
-            StopPair pair_stops = { current_stop, stop_to };
-            distances_.insert({ pair_stops, dist });
-        }
+    auto stop_to = FindStop(to_stop);
+    if (stop_to != nullptr) {
+        StopPair pair_stops = {current_stop, stop_to};
+        distances_.insert({pair_stops, distance});      
     }
 }
 
@@ -56,7 +54,7 @@ void TransportCatalogue::AddBus(std::string bus_name, const std::vector<std::str
     }
 }
 
-const Distance TransportCatalogue::GetDistance(const Stop* from, const Stop* to) const {
+Distance TransportCatalogue::GetDistance(const Stop* from, const Stop* to) const {
     StopPair key = { from , to };
     StopPair rkey = { to , from };
     if (!distances_.count(key)) {

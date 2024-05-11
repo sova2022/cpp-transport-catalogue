@@ -134,7 +134,10 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
         if (cmd.command == "Stop") {
             auto to_stops = ParseDistance(cmd.description);
             if (!to_stops.empty()) {
-                catalogue.AddStopDistance(cmd.id, to_stops);
+                for (auto [stop, dist] : to_stops) {
+                    catalogue.SetDistanceBetweenStops(cmd.id, stop, dist);
+                }
+                
             }
         }
     }
