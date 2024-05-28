@@ -1,0 +1,59 @@
+{
+  "base_requests": [
+    {
+      "type": "Bus",
+      "name": "114",
+      "stops": ["Marine Station", "Riviera Bridge"],
+      "is_roundtrip": false
+    },
+    {
+      "type": "Bus",
+      "name": "117",
+      "stops": ["Marine Station", "Riviera Bridge", "Riviera"],
+      "is_roundtrip": false
+    },
+    {
+      "type": "Bus",
+      "name": "116 44",
+      "stops": ["Marine Station", "Riviera Bridge", "Marine Station"],
+      "is_roundtrip": true
+    },
+    {
+      "type": "Stop",
+      "name": "Riviera",
+      "latitude": 43.589795,
+      "longitude": 39.718901,
+      "road_distances": {"Marushkino": 950}
+    },
+    {
+      "type": "Stop",
+      "name": "Marushkino",
+      "latitude": 43.997795,
+      "longitude": 39.866901,
+      "road_distances": {"Riviera": 1050}
+    },
+    {
+      "type": "Stop",
+      "name": "Riviera Bridge",
+      "latitude": 43.587795,
+      "longitude": 39.716901,
+      "road_distances": {"Marine Station": 850, "Riviera": 950}
+    },
+    {
+      "type": "Stop",
+      "name": "Marine Station",
+      "latitude": 43.581969,
+      "longitude": 39.719848,
+      "road_distances": {"Riviera Bridge": 850}
+    }
+  ],
+  "stat_requests": [
+    { "id": 1, "type": "Stop", "name": "Riviera Bridge" },
+    { "id": 2, "type": "Bus", "name": "114" },
+    { "id": 3, "type": "Bus", "name": "115" },
+    { "id": 4, "type": "Bus", "name": "116 44" },
+    { "id": 5, "type": "Stop", "name": "Riviera T" },
+    { "id": 6, "type": "Bus", "name": "117" },
+    { "id": 7, "type": "Stop", "name": "Marushkino" }
+  ]
+}
