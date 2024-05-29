@@ -34,8 +34,8 @@ namespace renderer {
         for (auto [name, stop] : stops) {
             svg::Circle circle;
             circle.SetCenter(projector(stop->coordinates))
-                .SetRadius(stop_radius)
-                .SetFillColor("white");
+                  .SetRadius(stop_radius)
+                  .SetFillColor("white");
             doc.Add(circle);
         }
     }
@@ -45,10 +45,10 @@ namespace renderer {
 
         svg::Polyline polyline;
         polyline.SetStrokeColor(route_color)
-            .SetStrokeWidth(line_width)
-            .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
-            .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
-            .SetFillColor(svg::NoneColor);
+                .SetStrokeWidth(line_width)
+                .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
+                .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
+                .SetFillColor(svg::NoneColor);
 
         for (const auto& stop : bus.stops) {
             polyline.AddPoint(projector(stop->coordinates));

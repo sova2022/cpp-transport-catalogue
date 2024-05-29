@@ -20,7 +20,7 @@ namespace json {
         const Dict& GetRenderSetting() const;
         void AddStopsDataToCatalogue() const;
         void AddBusesDataToCatalogue() const;
-        svg::ColorType ParseColorType(Node value) const;
+        svg::Color HandlingColor(const Node& value) const;
         void ParseRenderSettings(renderer::MapRenderer& renderer) const;
         Node GetStatForBusRequest(const std::string_view name, int request_id);
         Node GetStatForStopRequest(const std::string_view name, int request_id);
@@ -30,7 +30,6 @@ namespace json {
     private:
         std::unique_ptr<Document> document_;
         std::unique_ptr<RequestHandler> handler_;
-
     };
 
 } //namespace json

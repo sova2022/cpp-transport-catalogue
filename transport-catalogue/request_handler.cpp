@@ -2,11 +2,10 @@
 
 #include "request_handler.h"
 
-#define UNCONST const_cast<std::deque<Bus>*>
-
 inline void SortBusesInDeque(const std::deque<Bus>* buses) {
-    std::sort(UNCONST(buses)->begin(), UNCONST(buses)->end(), 
-        [](auto lhs, auto rhs) { return lhs.bus_name < rhs.bus_name; });
+    std::deque<Bus>* unconst_buses = const_cast<std::deque<Bus>*>(buses);
+    std::sort(unconst_buses->begin(), unconst_buses->end(),
+        [](auto& lhs, auto& rhs) { return lhs.bus_name < rhs.bus_name; });
 }
 
 RequestHandler::RequestHandler(const TransportCatalogue& db, const renderer::MapRenderer& renderer)
@@ -19,7 +18,7 @@ const TransportCatalogue& RequestHandler::GetDataBase() {
 }
 
 std::optional<BusStat> RequestHandler::GetBusStat(const std::string_view& bus_name) const {
-    auto bus_ptr = db_.FindBus(bus_name);
+    const Bus* bus_ptr = db_.FindBus(bus_name);
     if (bus_ptr == nullptr) {
         return std::nullopt;
     }
@@ -48,8 +47,8 @@ const std::unordered_set<Bus*>* RequestHandler::GetBusesByStop(const std::string
 
 const renderer::SphereProjector RequestHandler::GetProjector(const std::deque<Bus>* buses) const {
     std::vector<geo::Coordinates> coords;
-    for (auto bus : *buses) {
-        for (auto stop : bus.stops)
+    for (const Bus& bus : *buses) {
+        for (const Stop* stop : bus.stops)
             coords.emplace_back(stop->coordinates);
     }
     renderer::SphereProjector projector(coords.begin(), coords.end()
@@ -60,13 +59,13 @@ const renderer::SphereProjector RequestHandler::GetProjector(const std::deque<Bu
 svg::Document RequestHandler::RenderMap() const {    
     svg::Document doc;
     std::vector<geo::Coordinates> coords;
-    renderer::SphereProjector projector = GetProjector(db_.GetAllBuses());
-    auto all_buses_ptr = db_.GetAllBuses();
+    renderer::SphereProjector projector = GetProjector(&db_.GetAllBuses());
+    auto all_buses_ptr = &db_.GetAllBuses();
     SortBusesInDeque(all_buses_ptr);
     std::vector<std::pair<svg::Text, svg::Text>> labels;
     std::map<std::string, Stop*> unique_sort_stops;
     int bus_number = 0;
-    for (auto bus : *all_buses_ptr) {
+    for (const Bus& bus : *all_buses_ptr) {
         auto route_color = renderer_.color_palette[bus_number % renderer_.color_palette.size()];
         renderer_.RenderRouteLine(bus, projector, doc, route_color, unique_sort_stops);
 
@@ -80,21 +79,19 @@ svg::Document RequestHandler::RenderMap() const {
         ++bus_number;
     }
 
-    for (auto label : labels) {
-        doc.Add(label.first);
-        doc.Add(label.second);
+    for (auto& label : labels) {
+        doc.Add(std::move(label.first));
+        doc.Add(std::move(label.second));
     }
 
     renderer_.RenderStopsSymbols(unique_sort_stops, projector, doc);
-    for (auto [name, stop] : unique_sort_stops) {
+    for (auto& [name, stop] : unique_sort_stops) {
         auto label = renderer_.RenderTextLabels(projector(stop->coordinates),
             renderer_.stop_label_offset, name, "black", renderer_.stop_label_font_size, "");
 
-        doc.Add(label.first);
-        doc.Add(label.second);
+        doc.Add(std::move(label.first));
+        doc.Add(std::move(label.second));
     }
-
-
     return doc;
 }
 

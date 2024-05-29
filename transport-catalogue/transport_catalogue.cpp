@@ -67,7 +67,7 @@ const std::unordered_set<Bus*>* TransportCatalogue::FindBusesForStop(const std::
     return nullptr;
 }
 
-const std::deque<Bus>* TransportCatalogue::GetAllBuses() const {
-    return &buses_; 
+const std::deque<Bus>& TransportCatalogue::GetAllBuses() const {
+    return buses_; 
 }
 

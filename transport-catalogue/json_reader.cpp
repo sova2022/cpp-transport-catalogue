@@ -77,23 +77,27 @@ namespace json {
         }
     }
     
-    svg::ColorType JsonReader::ParseColorType(Node value) const {
+    svg::Color JsonReader::HandlingColor(const Node& value) const {
         if (value.IsString()) {
-            return svg::ColorType::STRING;
+            return value.AsString();
         }
-        else if (value.IsArray()) {
+        if (value.IsArray()) {
             if (value.AsArray().size() == 3) {
-                return svg::ColorType::RGB;
+
+                return svg::Rgb{ static_cast<uint8_t>(value.AsArray()[0].AsInt())
+                               , static_cast<uint8_t>(value.AsArray()[1].AsInt())
+                               , static_cast<uint8_t>(value.AsArray()[2].AsInt()) };;
             }
-            else if (value.AsArray().size() == 4) {
-                return svg::ColorType::RGBA;
+            if (value.AsArray().size() == 4) {
+                return svg::Rgba{ static_cast<uint8_t>(value.AsArray()[0].AsInt())
+                                , static_cast<uint8_t>(value.AsArray()[1].AsInt())
+                                , static_cast<uint8_t>(value.AsArray()[2].AsInt())
+                                , value.AsArray()[3].AsDouble() };
             }
         }     
-        return svg::ColorType::NONE;
+        return svg::NoneColor;
     }
     
-#define UINT(expr) static_cast<uint8_t>(expr)
-
     void JsonReader::ParseRenderSettings(renderer::MapRenderer& renderer) const {
         Dict dict = GetRenderSetting();
         renderer.width                = dict.at("width").AsDouble();
@@ -110,52 +114,11 @@ namespace json {
         renderer.stop_label_offset    = { dict.at("stop_label_offset").AsArray()[0].AsDouble()
                                         , dict.at("stop_label_offset").AsArray()[1].AsDouble() };
   
-        switch (ParseColorType(dict.at("underlayer_color"))) {
-            case svg::ColorType::STRING: {
-                renderer.underlayer_color = dict.at("underlayer_color").AsString();
-                break;
-            }
-            case svg::ColorType::RGB: {
-                const auto& color_array   = dict.at("underlayer_color").AsArray();
-                renderer.underlayer_color = svg::Rgb{ UINT(color_array[0].AsInt()), UINT(color_array[1].AsInt())
-                                                    , UINT(color_array[2].AsInt()) };
-                break;
-            }
-            case svg::ColorType::RGBA: {
-                const auto& color_array   = dict.at("underlayer_color").AsArray();
-                renderer.underlayer_color = svg::Rgba{ UINT(color_array[0].AsInt()), UINT(color_array[1].AsInt())
-                                                     , UINT(color_array[2].AsInt()), color_array[3].AsDouble() };
-                break;
-            }
-            case svg::ColorType::NONE:
-                renderer.underlayer_color = svg::NoneColor;
-        }
+        renderer.underlayer_color = HandlingColor(dict.at("underlayer_color"));
         const auto& color_palette = dict.at("color_palette").AsArray();
         for (const auto& color : color_palette) {
-            switch (ParseColorType(color)) {
-                case svg::ColorType::STRING: {
-                    renderer.color_palette.push_back(color.AsString());
-                    break;
-                }
-                case svg::ColorType::RGB: {
-                    const auto& color_array = color.AsArray();
-                    renderer.color_palette.emplace_back(svg::Rgb{ UINT(color_array[0].AsInt()), UINT(color_array[1].AsInt())
-                                                             , UINT(color_array[2].AsInt()) });
-                    break;
-                }
-                case svg::ColorType::RGBA: {
-                    const auto& color_array = color.AsArray();
-                    renderer.color_palette.emplace_back(svg::Rgba{ UINT(color_array[0].AsInt()), UINT(color_array[1].AsInt())
-                                                              , UINT(color_array[2].AsInt()), color_array[3].AsDouble() });
-                    break;
-                }
-                case svg::ColorType::NONE: {
-                    renderer.color_palette.push_back(svg::NoneColor);
-                    break;
-                }
-            }
-        }
-        
+            renderer.color_palette.emplace_back(HandlingColor(color));
+        }        
     }
 
     Node JsonReader::GetStatForBusRequest(const std::string_view name, int request_id) {
@@ -218,8 +181,7 @@ namespace json {
                 answer.emplace_back(GetMapScheme(handler, request_id));
             }
         }
-        Print(Document{ answer }, out);
-        
+        Print(Document{ answer }, out);        
     }
 
 } // namespace json

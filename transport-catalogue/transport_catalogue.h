@@ -26,7 +26,7 @@ public:
     void AddBus(std::string bus_name, const std::vector<std::string>& stops, TypeRoute type);
     Distance GetDistance(const Stop* from, const Stop* to) const;
     const std::unordered_set<Bus*>* FindBusesForStop(const std::string_view stop) const;
-    const std::deque<Bus>* GetAllBuses() const;
+    const std::deque<Bus>& GetAllBuses() const;
 
 private:
     std::deque<Stop> stops_;

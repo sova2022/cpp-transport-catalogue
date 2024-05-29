@@ -20,16 +20,11 @@ namespace json {
 
     class Node final {
     public:
-        using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
+        using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;        
         
-        Node() = default;
-        Node(std::nullptr_t)    : value_(nullptr)          {}
-        Node(Array array)       : value_(std::move(array)) {}
-        Node(Dict map)          : value_(std::move(map))   {}
-        Node(bool value)        : value_(value)            {}
-        Node(int value)         : value_(value)            {}
-        Node(double value)      : value_(value)            {}      
-        Node(std::string value) : value_(std::move(value)) {}
+        template<typename T>
+        Node(T value) : value_(std::move(value)) {}
+        Node(std::nullptr_t) : value_(nullptr)   {}
 
         #define ALT std::holds_alternative
         bool IsInt()        const { return ALT<int>(value_); }

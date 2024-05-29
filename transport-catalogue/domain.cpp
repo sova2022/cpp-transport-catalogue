@@ -4,7 +4,6 @@ Bus::Bus(std::string& bus_name)
     : bus_name(std::move(bus_name)) {
 }
 
-
 Distance::Distance(int value)
     : meters(value) {
 }

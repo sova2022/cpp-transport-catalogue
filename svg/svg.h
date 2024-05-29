@@ -60,13 +60,6 @@ namespace svg {
         ROUND,
     };
 
-    enum class ColorType {
-        STRING,
-        RGB,
-        RGBA,
-        NONE,
-    };
-
     std::ostream& operator<<(std::ostream& out, const StrokeLineCap& cap);
     std::ostream& operator<<(std::ostream& out, const StrokeLineJoin& join);
 
