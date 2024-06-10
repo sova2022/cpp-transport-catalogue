@@ -30,7 +30,7 @@ namespace json {
                 if (!input) {
                     throw ParsingError("Failed to read number from stream");
                 }
-            };
+                };
 
             auto read_digits = [&input, read_char] {
                 if (!isdigit(input.peek())) {
@@ -39,7 +39,7 @@ namespace json {
                 while (isdigit(input.peek())) {
                     read_char();
                 }
-            };
+                };
 
             if (input.peek() == '-') {
                 read_char();
@@ -80,8 +80,8 @@ namespace json {
 
         Node LoadString(istream& input) {
             using namespace literals;
-    
-            auto it  = istreambuf_iterator<char>(input);
+
+            auto it = istreambuf_iterator<char>(input);
             auto end = istreambuf_iterator<char>();
             string s;
             while (true) {
@@ -92,34 +92,37 @@ namespace json {
                 if (ch == '"') {
                     ++it;
                     break;
-                } else if (ch == '\\') {
+                }
+                else if (ch == '\\') {
                     ++it;
                     if (it == end) {
                         throw ParsingError("String parsing error");
                     }
                     const char escaped_char = *(it);
                     switch (escaped_char) {
-                        case 'n':
-                            s.push_back('\n');
-                            break;
-                        case 't':
-                            s.push_back('\t');
-                            break;
-                        case 'r':
-                            s.push_back('\r');
-                            break;
-                        case '"':
-                            s.push_back('"');
-                            break;
-                        case '\\':
-                            s.push_back('\\');
-                            break;
-                        default:
-                            throw ParsingError("Unrecognized escape sequence \\"s + escaped_char);
+                    case 'n':
+                        s.push_back('\n');
+                        break;
+                    case 't':
+                        s.push_back('\t');
+                        break;
+                    case 'r':
+                        s.push_back('\r');
+                        break;
+                    case '"':
+                        s.push_back('"');
+                        break;
+                    case '\\':
+                        s.push_back('\\');
+                        break;
+                    default:
+                        throw ParsingError("Unrecognized escape sequence \\"s + escaped_char);
                     }
-                } else if (ch == '\n' || ch == '\r') {
+                }
+                else if (ch == '\n' || ch == '\r') {
                     throw ParsingError("Unexpected end of line"s);
-                } else {
+                }
+                else {
                     s.push_back(ch);
                 }
                 ++it;
@@ -194,22 +197,22 @@ namespace json {
         if (!IsInt()) {
             throw logic_error("Not an int");
         }
-        return get<int>(value_);
+        return get<int>(*this);
     }
 
     bool Node::AsBool() const {
         if (!IsBool()) {
             throw logic_error("Not a bool");
         }
-        return get<bool>(value_);
+        return get<bool>(*this);
     }
 
     double Node::AsDouble() const {
         if (IsInt()) {
-            return get<int>(value_);
+            return get<int>(*this);
         }
         else if (IsPureDouble()) {
-            return get<double>(value_);
+            return get<double>(*this);
         }
         else {
             throw logic_error("Not a double");
@@ -220,25 +223,25 @@ namespace json {
         if (!IsString()) {
             throw logic_error("Not a string");
         }
-        return get<string>(value_);
+        return get<string>(*this);
     }
 
     const Array& Node::AsArray() const {
         if (!IsArray()) {
             throw logic_error("Not an Array");
         }
-        return get<Array>(value_);
+        return get<Array>(*this);
     }
 
-    const Dict& Node::AsMap() const {
-        if (!IsMap()) {
+    const Dict& Node::AsDict() const {
+        if (!IsDict()) {
             throw logic_error("Not a Dict");
         }
-        return get<Dict>(value_);
+        return get<Dict>(*this);
     }
 
     bool Node::operator==(const Node& other) const {
-        return value_ == other.value_;
+        return GetValue() == other.GetValue();
     }
 
     bool Node::operator!=(const Node& other) const {
@@ -246,7 +249,7 @@ namespace json {
     }
 
     bool Document::operator==(const Document& other) const {
-        return root_ == other.root_;
+        return GetRoot() == other.GetRoot();
     }
 
     bool Document::operator!=(const Document& other) const {
@@ -361,7 +364,7 @@ namespace json {
     }
 
     void Print(const Document& doc, ostream& output) {
-        PrintNode(doc.GetRoot(), PrintContext { output });
+        PrintNode(doc.GetRoot(), PrintContext{ output });
     }
 
 

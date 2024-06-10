@@ -3,7 +3,7 @@
 #include <memory>
 #include <sstream>
 
-#include "../json/json.h"
+#include "../json/json_builder.h"
 #include "request_handler.h"
 
 namespace json {

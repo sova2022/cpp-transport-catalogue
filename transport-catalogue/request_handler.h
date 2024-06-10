@@ -1,10 +1,7 @@
 #pragma once
 
-#include <typeinfo>
-
 #include "map_renderer.h"
 #include "transport_catalogue.h"
-#include "../svg/svg.h"
 
 class RequestHandler {
 public:  

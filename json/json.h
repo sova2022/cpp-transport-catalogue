@@ -10,7 +10,7 @@
 namespace json {
 
     class Node;
-    using Dict  = std::map<std::string, Node>;
+    using Dict = std::map<std::string, Node>;
     using Array = std::vector<Node>;
 
     class ParsingError : public std::runtime_error {
@@ -18,38 +18,36 @@ namespace json {
         using runtime_error::runtime_error;
     };
 
-    class Node final {
+    class Node final
+        : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
     public:
-        using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;        
-        
-        template<typename T>
-        Node(T value) : value_(std::move(value)) {}
-        Node(std::nullptr_t) : value_(nullptr)   {}
+        using variant::variant;
+        using Value = variant;
 
-        #define ALT std::holds_alternative
-        bool IsInt()        const { return ALT<int>(value_); }
-        bool IsDouble()     const { return ALT<double>(value_) || ALT<int>(value_); }
-        bool IsPureDouble() const { return ALT<double>(value_); }
-        bool IsBool()       const { return ALT<bool>(value_); }
-        bool IsString()     const { return ALT<std::string>(value_); }
-        bool IsNull()       const { return ALT<std::nullptr_t>(value_); }
-        bool IsArray()      const { return ALT<Array>(value_); }
-        bool IsMap()        const { return ALT<Dict>(value_); }
+        Node(Value value) : variant(std::move(value)) {}
+
+#define ALT std::holds_alternative
+        bool IsInt()        const { return ALT<int>(*this); }
+        bool IsDouble()     const { return ALT<double>(*this) || ALT<int>(*this); }
+        bool IsPureDouble() const { return ALT<double>(*this); }
+        bool IsBool()       const { return ALT<bool>(*this); }
+        bool IsString()     const { return ALT<std::string>(*this); }
+        bool IsNull()       const { return ALT<std::nullptr_t>(*this); }
+        bool IsArray()      const { return ALT<Array>(*this); }
+        bool IsDict()        const { return ALT<Dict>(*this); }
 
         int AsInt()                   const;
         bool AsBool()                 const;
         double AsDouble()             const;
         const std::string& AsString() const;
         const Array& AsArray()        const;
-        const Dict& AsMap()           const;
-        
+        const Dict& AsDict()           const;
+
         bool operator==(const Node& other) const;
         bool operator!=(const Node& other) const;
 
-        const Value& GetValue() const { return value_; }
-
-    private:
-        Value value_;
+        const Value& GetValue() const { return *this; }
+        Value& GetValue() { return *this; }
     };
 
     class Document {

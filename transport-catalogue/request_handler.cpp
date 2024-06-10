@@ -2,10 +2,11 @@
 
 #include "request_handler.h"
 
-inline void SortBusesInDeque(const std::deque<Bus>* buses) {
-    std::deque<Bus>* unconst_buses = const_cast<std::deque<Bus>*>(buses);
-    std::sort(unconst_buses->begin(), unconst_buses->end(),
+inline std::deque<Bus> GetSortedCopyOfBuses(const std::deque<Bus>* buses) {
+    std::deque<Bus> copy_buses(*buses);
+    std::sort(copy_buses.begin(), copy_buses.end(),
         [](auto& lhs, auto& rhs) { return lhs.bus_name < rhs.bus_name; });
+    return copy_buses;
 }
 
 RequestHandler::RequestHandler(const TransportCatalogue& db, const renderer::MapRenderer& renderer)
@@ -56,16 +57,15 @@ const renderer::SphereProjector RequestHandler::GetProjector(const std::deque<Bu
     return projector;
 }
 
-svg::Document RequestHandler::RenderMap() const {    
+svg::Document RequestHandler::RenderMap() const {  
+    std::deque<Bus> all_buses(std::move(GetSortedCopyOfBuses(&db_.GetAllBuses())));
     svg::Document doc;
     std::vector<geo::Coordinates> coords;
-    renderer::SphereProjector projector = GetProjector(&db_.GetAllBuses());
-    auto all_buses_ptr = &db_.GetAllBuses();
-    SortBusesInDeque(all_buses_ptr);
+    renderer::SphereProjector projector = GetProjector(&all_buses);
     std::vector<std::pair<svg::Text, svg::Text>> labels;
     std::map<std::string, Stop*> unique_sort_stops;
     int bus_number = 0;
-    for (const Bus& bus : *all_buses_ptr) {
+    for (const Bus& bus : all_buses) {
         auto route_color = renderer_.color_palette[bus_number % renderer_.color_palette.size()];
         renderer_.RenderRouteLine(bus, projector, doc, route_color, unique_sort_stops);
 
