@@ -6,12 +6,14 @@
 
 namespace json {
     
-    class ArrayItemContext;
-    class DictItemContext;    
-    class KeyItemContext;
-
     class Builder {
-    public:
+    public:             
+        class ArrayItemContext;
+        class BaseItemContext;
+        class DictItemContext;
+        class KeyItemContext;
+        class ValuetemContext;
+
         Builder();
                 
         Builder& Key(std::string key);
@@ -27,11 +29,10 @@ namespace json {
         std::vector<Node*> nodes_stack_;
 
         Node::Value& GetCurrentValue();
-        //static Node BuildNode(Node::Value value);
         Builder& AddObject(Node::Value value, bool complex);
     };
 
-    class BaseItemContext {
+    class Builder::BaseItemContext {
     public:                
         BaseItemContext(Builder& builder) : builder_(builder) {} 
 
@@ -46,28 +47,26 @@ namespace json {
         Builder& builder_;
     };
 
-    class ValuetemContext : public BaseItemContext {
+    class Builder::ValuetemContext : public BaseItemContext {
     public:
         ValuetemContext(Builder& builder) : BaseItemContext(builder) {}
 
         Builder& Value(Node::Value value) = delete;
-        DictItemContext StartDict() = delete;
+        DictItemContext StartDict()   = delete;
         ArrayItemContext StartArray() = delete;
-        Builder& EndArray() = delete;
-
+        Builder& EndArray()           = delete;
     };
     
-    class DictItemContext : public BaseItemContext {
+    class Builder::DictItemContext : public BaseItemContext {
     public:
         DictItemContext(Builder& builder) : BaseItemContext(builder) {}
 
-        DictItemContext StartDict() = delete;
+        DictItemContext StartDict()   = delete;
         ArrayItemContext StartArray() = delete;
-        Builder& EndArray() = delete;
-
+        Builder& EndArray()           = delete;
     };
     
-    class ArrayItemContext : public BaseItemContext {
+    class Builder::ArrayItemContext : public BaseItemContext {
     public:
         ArrayItemContext(Builder& builder) : BaseItemContext(builder) {}
         ArrayItemContext Value(Node::Value value) {
@@ -75,19 +74,17 @@ namespace json {
         }
         KeyItemContext Key(std::string key) = delete;
         Builder& EndDict() = delete;
-
     };
 
-    class KeyItemContext : public BaseItemContext {
+    class Builder::KeyItemContext : public BaseItemContext {
     public:
         KeyItemContext(Builder& builder) : BaseItemContext(builder) {}
         KeyItemContext Key(std::string key) = delete;
         ValuetemContext Value(Node::Value value) {
             return ValuetemContext(builder_.Value(value));
         }
-        Builder& EndDict() = delete;
+        Builder& EndDict()  = delete;
         Builder& EndArray() = delete;
-
     };
 
 } // namespace json

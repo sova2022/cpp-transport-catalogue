@@ -2,7 +2,6 @@
 
 #include <deque>
 #include <iostream>
-#include <optional>
 #include <set>
 #include <string_view>
 #include <unordered_map>
@@ -27,7 +26,9 @@ public:
     Distance GetDistance(const Stop* from, const Stop* to) const;
     const std::unordered_set<Bus*>* FindBusesForStop(const std::string_view stop) const;
     const std::deque<Bus>& GetAllBuses() const;
-
+    const Stops& GetAllStops() const;
+    size_t GetAllStopsCount() const;
+    
 private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;

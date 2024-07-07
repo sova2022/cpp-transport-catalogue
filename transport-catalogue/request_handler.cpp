@@ -2,16 +2,18 @@
 
 #include "request_handler.h"
 
-inline std::deque<Bus> GetSortedCopyOfBuses(const std::deque<Bus>* buses) {
+static std::deque<Bus> GetSortedCopyOfBuses(const std::deque<Bus>* buses) {
     std::deque<Bus> copy_buses(*buses);
     std::sort(copy_buses.begin(), copy_buses.end(),
         [](auto& lhs, auto& rhs) { return lhs.bus_name < rhs.bus_name; });
     return copy_buses;
 }
 
-RequestHandler::RequestHandler(const TransportCatalogue& db, const renderer::MapRenderer& renderer)
+RequestHandler::RequestHandler(const TransportCatalogue& db, const renderer::MapRenderer& renderer,
+        transport_router::TransportRouter& router)
     : db_(db)
-    , renderer_(renderer) {
+    , renderer_(renderer)
+    , router_(router) {
 }
 
 const TransportCatalogue& RequestHandler::GetDataBase() {
@@ -55,6 +57,10 @@ const renderer::SphereProjector RequestHandler::GetProjector(const std::deque<Bu
     renderer::SphereProjector projector(coords.begin(), coords.end()
                                        , renderer_.width, renderer_.height, renderer_.padding);
     return projector;
+}
+
+transport_router::TransportRouter& RequestHandler::GetRouter() {
+    return router_;
 }
 
 svg::Document RequestHandler::RenderMap() const {  

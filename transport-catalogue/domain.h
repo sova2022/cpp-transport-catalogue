@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,14 @@ struct Distance {
     Distance() = default;
     Distance(int value);
     int meters;
+};
+
+struct RoutingSettings {
+    RoutingSettings() = default;
+    RoutingSettings(double bus_wait_time, double bus_velocity);
+
+    double bus_wait_time = 0.0;
+    double bus_velocity  = 0.0;
 };
 
 struct StopPairHasher {

@@ -27,6 +27,10 @@ namespace json {
         return document_->GetRoot().AsDict().at("render_settings").AsDict();
     }
 
+    const Dict& JsonReader::GetRoutingSetting() const {
+        return document_->GetRoot().AsDict().at("routing_settings").AsDict();
+    }
+
     void JsonReader::AddStopsDataToCatalogue() const {
         for (auto node : GetBaseRequests()) {
             if (node.AsDict().at("type").AsString() == "Stop") {
@@ -75,6 +79,11 @@ namespace json {
                                                           .AddBus(name, stops, type);
             }
         }
+    }
+
+    void JsonReader::AddRoutingSetting() const {
+        RoutingSettings settings(GetRoutingSetting().at("bus_wait_time").AsDouble(), GetRoutingSetting().at("bus_velocity").AsDouble());
+        const_cast<transport_router::TransportRouter&>(handler_->GetRouter()).SetRoutingSettings(settings);
     }
     
     svg::Color JsonReader::HandlingColor(const Node& value) const {
@@ -172,6 +181,41 @@ namespace json {
         return answer.Build();
     }
 
+    Node JsonReader::GetRouteInfo(const std::string_view from, const std::string_view to, int request_id) {
+        Builder answer;
+        transport_router::RouteData route_data = handler_->GetRouter().CalculateRoute(from, to);
+
+        if (!route_data.founded) {
+            answer.StartDict()
+                .Key("request_id").Value(request_id)
+                .Key("error_message").Value("not found")
+                .EndDict();
+            return answer.Build();
+        }
+
+        Array items;
+        for (const auto& item : route_data.items) {
+            Dict items_map;
+            if (item.type == graph::EdgeType::TRAVEL) {
+                items_map["type"] = std::string("Bus");
+                items_map["bus"] = item.edge_name;
+                items_map["span_count"] = item.span_count;
+            }
+            else if (item.type == graph::EdgeType::WAIT) {
+                items_map["type"] = std::string("Wait");
+                items_map["stop_name"] = item.edge_name;
+            }
+            items_map["time"] = item.time;
+            items.push_back(items_map);
+        }
+        answer.StartDict()
+            .Key("request_id").Value(request_id)
+            .Key("total_time").Value(route_data.total_time)
+            .Key("items").Value(items)
+            .EndDict();
+        return answer.Build();
+    }
+
     void JsonReader::ParseAndPrintStat([[maybe_unused]] RequestHandler& handler, std::ostream& out) {
         Builder answer;
         answer.StartArray();
@@ -188,6 +232,11 @@ namespace json {
             if (node.AsDict().at("type").AsString() == "Map") {
                 answer.Value(GetMapScheme(handler, request_id).GetValue());
             }
+            if (node.AsDict().at("type").AsString() == "Route") {
+                answer.Value(GetRouteInfo(node.AsDict().at("from").AsString(),
+                    node.AsDict().at("to").AsString(), request_id).GetValue());
+            }
+
         }
         answer.EndArray();
         Print(Document{ answer.Build()}, out);

@@ -71,3 +71,11 @@ const std::deque<Bus>& TransportCatalogue::GetAllBuses() const {
     return buses_; 
 }
 
+const TransportCatalogue::Stops& TransportCatalogue::GetAllStops() const {
+    return stopname_to_stop_;
+}
+
+size_t TransportCatalogue::GetAllStopsCount() const {
+    return stops_.size();
+}
+

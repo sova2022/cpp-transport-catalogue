@@ -164,7 +164,6 @@ namespace svg {
         void RenderObject(const RenderContext& context) const override;
 
         std::vector<Point> points_;
-
     };
 
     class Text : public Object, public PathProps<Text> {
@@ -185,7 +184,6 @@ namespace svg {
         std::string font_weight_;
         std::string font_family_;
         std::string data_;
-
     };
 
     class ObjectContainer {
