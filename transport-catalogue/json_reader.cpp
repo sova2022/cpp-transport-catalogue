@@ -36,11 +36,11 @@ namespace json {
             if (node.AsDict().at("type").AsString() == "Stop") {
 
                 std::string name = node.AsDict().at("name").AsString();
-                double latitude  = node.AsDict().at("latitude").AsDouble();
+                double latitude = node.AsDict().at("latitude").AsDouble();
                 double longitude = node.AsDict().at("longitude").AsDouble();
 
                 const_cast<TransportCatalogue&>(handler_->GetDataBase())
-                                                         .AddStop(name, { latitude , longitude });
+                    .AddStop(name, { latitude , longitude });
 
             }
         }
@@ -73,10 +73,10 @@ namespace json {
                 if (!node.AsDict().at("is_roundtrip").AsBool()) {
                     std::vector<std::string> temp = stops;
                     stops.insert(stops.end(), std::next(temp.rbegin()), temp.rend());
-                    
+
                 }
                 const_cast<TransportCatalogue&>(handler_->GetDataBase())
-                                                          .AddBus(name, stops, type);
+                    .AddBus(name, stops, type);
             }
         }
     }
@@ -85,7 +85,7 @@ namespace json {
         RoutingSettings settings(GetRoutingSetting().at("bus_wait_time").AsDouble(), GetRoutingSetting().at("bus_velocity").AsDouble());
         const_cast<transport_router::TransportRouter&>(handler_->GetRouter()).SetRoutingSettings(settings);
     }
-    
+
     svg::Color JsonReader::HandlingColor(const Node& value) const {
         if (value.IsString()) {
             return value.AsString();
@@ -103,31 +103,31 @@ namespace json {
                                 , static_cast<uint8_t>(value.AsArray()[2].AsInt())
                                 , value.AsArray()[3].AsDouble() };
             }
-        }     
+        }
         return svg::NoneColor;
     }
-    
+
     void JsonReader::ParseRenderSettings(renderer::MapRenderer& renderer) const {
         Dict dict = GetRenderSetting();
-        renderer.width                = dict.at("width").AsDouble();
-        renderer.height               = dict.at("height").AsDouble();
-        renderer.padding              = dict.at("padding").AsDouble();
-        renderer.line_width           = dict.at("line_width").AsDouble();
-        renderer.stop_radius          = dict.at("stop_radius").AsDouble();
-        renderer.bus_label_font_size  = dict.at("bus_label_font_size").AsInt();
+        renderer.width = dict.at("width").AsDouble();
+        renderer.height = dict.at("height").AsDouble();
+        renderer.padding = dict.at("padding").AsDouble();
+        renderer.line_width = dict.at("line_width").AsDouble();
+        renderer.stop_radius = dict.at("stop_radius").AsDouble();
+        renderer.bus_label_font_size = dict.at("bus_label_font_size").AsInt();
         renderer.stop_label_font_size = dict.at("stop_label_font_size").AsInt();
-        renderer.underlayer_width     = dict.at("underlayer_width").AsDouble();
+        renderer.underlayer_width = dict.at("underlayer_width").AsDouble();
 
-        renderer.bus_label_offset     = { dict.at("bus_label_offset").AsArray()[0].AsDouble()
-                                        , dict.at("bus_label_offset").AsArray()[1].AsDouble() }; 
-        renderer.stop_label_offset    = { dict.at("stop_label_offset").AsArray()[0].AsDouble()
+        renderer.bus_label_offset = { dict.at("bus_label_offset").AsArray()[0].AsDouble()
+                                        , dict.at("bus_label_offset").AsArray()[1].AsDouble() };
+        renderer.stop_label_offset = { dict.at("stop_label_offset").AsArray()[0].AsDouble()
                                         , dict.at("stop_label_offset").AsArray()[1].AsDouble() };
-  
+
         renderer.underlayer_color = HandlingColor(dict.at("underlayer_color"));
         const auto& color_palette = dict.at("color_palette").AsArray();
         for (const auto& color : color_palette) {
             renderer.color_palette.emplace_back(HandlingColor(color));
-        }        
+        }
     }
 
     Node JsonReader::GetStatForBusRequest(const std::string_view name, int request_id) {
@@ -136,17 +136,18 @@ namespace json {
         auto stat = handler_->GetBusStat(name);
         if (stat) {
             answer.Key("curvature").Value(stat->curvature)
-                  .Key("request_id").Value(request_id)
-                  .Key("route_length").Value(stat->length)
-                  .Key("stop_count").Value(static_cast<int>(stat->stops))
-                  .Key("unique_stop_count").Value(static_cast<int>(stat->unique_stops));
-        } else {
+                .Key("request_id").Value(request_id)
+                .Key("route_length").Value(stat->length)
+                .Key("stop_count").Value(static_cast<int>(stat->stops))
+                .Key("unique_stop_count").Value(static_cast<int>(stat->unique_stops));
+        }
+        else {
             std::string error("not found");
             answer.Key("error_message").Value(error)
-                  .Key("request_id").Value(request_id);
-        } 
+                .Key("request_id").Value(request_id);
+        }
         answer.EndDict();
-        return answer.Build();   
+        return answer.Build();
     }
 
     Node JsonReader::GetStatForStopRequest(const std::string_view name, int request_id) {
@@ -156,8 +157,8 @@ namespace json {
         if (handler_->GetDataBase().FindStop(name) == nullptr) {
             std::string error("not found");
             answer.Key("error_message").Value(error)
-                  .Key("request_id").Value(request_id)
-                  .EndDict();
+                .Key("request_id").Value(request_id)
+                .EndDict();
             return answer.Build();
         }
         auto buses_container = handler_->GetBusesByStop(name);
@@ -165,19 +166,19 @@ namespace json {
             buses.emplace_back(Node{ bus_name });
         }
         answer.Key("buses").Value(buses)
-              .Key("request_id").Value(request_id)
-              .EndDict();
+            .Key("request_id").Value(request_id)
+            .EndDict();
         return answer.Build();
     }
-    
+
     Node JsonReader::GetMapScheme(RequestHandler& handler, int request_id) {
         Builder answer;
         std::ostringstream out;
         handler.RenderMap().Render(out);
         answer.StartDict()
-              .Key("request_id").Value(request_id)
-              .Key("map").Value(out.str())
-              .EndDict();
+            .Key("request_id").Value(request_id)
+            .Key("map").Value(out.str())
+            .EndDict();
         return answer.Build();
     }
 
@@ -196,12 +197,12 @@ namespace json {
         Array items;
         for (const auto& item : route_data.items) {
             Dict items_map;
-            if (item.type == graph::EdgeType::TRAVEL) {
+            if (item.type == EdgeType::TRAVEL) {
                 items_map["type"] = std::string("Bus");
                 items_map["bus"] = item.edge_name;
                 items_map["span_count"] = item.span_count;
             }
-            else if (item.type == graph::EdgeType::WAIT) {
+            else if (item.type == EdgeType::WAIT) {
                 items_map["type"] = std::string("Wait");
                 items_map["stop_name"] = item.edge_name;
             }
@@ -239,7 +240,7 @@ namespace json {
 
         }
         answer.EndArray();
-        Print(Document{ answer.Build()}, out);
+        Print(Document{ answer.Build() }, out);
     }
 
 } // namespace json

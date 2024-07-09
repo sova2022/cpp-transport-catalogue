@@ -6,6 +6,11 @@
 
 #include "geo.h"
 
+enum class EdgeType {
+    TRAVEL,
+    WAIT,
+};
+
 struct Stop {
     std::string stop_name;
     geo::Coordinates coordinates;

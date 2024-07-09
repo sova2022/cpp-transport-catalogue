@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ranges.h"
-
 #include <cstdlib>
 #include <vector>
 
@@ -10,19 +9,11 @@ namespace graph {
     using VertexId = size_t;
     using EdgeId = size_t;
 
-    enum class EdgeType {
-        TRAVEL,
-        WAIT,
-    };
-
     template <typename Weight>
     struct Edge {
         VertexId from;
         VertexId to;
         Weight weight;
-        std::string edge_name;
-        EdgeType type;
-        int span_count = 0;
     };
 
     template <typename Weight>

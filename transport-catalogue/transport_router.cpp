@@ -6,7 +6,7 @@ namespace transport_router {
 		: tc_(db) {
 	}
 
-	void TransportRouter::SetRoutingSettings(const RoutingSettings settings) {
+	void TransportRouter::SetRoutingSettings(const RoutingSettings& settings) {
 		settings_ = settings;
 	}
 
@@ -14,7 +14,7 @@ namespace transport_router {
 		return settings_;
 	}
 
-	const RouteData TransportRouter::CalculateRoute(const std::string_view from, const std::string_view to) {
+	RouteData TransportRouter::CalculateRoute(std::string_view from, std::string_view to) {
 		if (!router_) {
 			BuildGraph();
 		}
@@ -28,10 +28,10 @@ namespace transport_router {
 				auto edge_details = graph_.GetEdge(element_id);
 				result.total_time += edge_details.weight;
 				result.items.emplace_back(RouteItem{
-					edge_details.edge_name,
-					edge_details.type == graph::EdgeType::TRAVEL ? edge_details.span_count : 0,
+					edges_info_.at(element_id).edge_name,
+					edges_info_.at(element_id).type == EdgeType::TRAVEL ? edges_info_.at(element_id).span_count : 0,
 					edge_details.weight,
-					edge_details.type });
+					edges_info_.at(element_id).type });
 			}
 		}
 		return result;
@@ -43,20 +43,23 @@ namespace transport_router {
 		size_t vertex_id = 0;
 		Graph graph(total_stops * 2);
 		graph_ = std::move(graph);
-
 		vertexes_.reserve(total_stops);
 
 		for (const auto& [stopname, stop] : tc_.GetAllStops()) {
 			vertexes_.insert({ stopname, {vertex_id, vertex_id + 1} });
 			++vertex_id;
-			graph_.AddEdge({
+			auto edge_id = graph_.AddEdge({
 					vertexes_.at(stopname).wait,
 					vertexes_.at(stopname).travel,
-					settings_.bus_wait_time,
-					stop->stop_name,
-					graph::EdgeType::WAIT,
-					0  // span == 0 для ребра ожидания
+					settings_.bus_wait_time
 				});
+			edges_info_.insert({ edge_id,
+				{ stop->stop_name,
+					0,	// span == 0 для ребра ожидания
+					0.0, 
+					EdgeType::WAIT					
+				} });
+
 			++vertex_id;
 		}
 
@@ -73,14 +76,17 @@ namespace transport_router {
 				int span_count = 0;
 				for (size_t it_to = it_from + 1; it_to < bus_stop_count; ++it_to) {
 					double road_distance = distances[it_to] - distances[it_from];
-					graph_.AddEdge({
+					auto edge_id = graph_.AddEdge({
 							vertexes_.at(bus.stops[it_from]->stop_name).travel,
 							vertexes_.at(bus.stops[it_to]->stop_name).wait,
-							road_distance / velocity_factor,
-							bus.bus_name,
-							graph::EdgeType::TRAVEL,
-							++span_count
+							road_distance / velocity_factor
 						});
+					edges_info_.insert({ edge_id,
+						{ bus.bus_name,
+							++span_count,
+							0.0,
+							EdgeType::TRAVEL
+						} });
 				}
 			}
 		}

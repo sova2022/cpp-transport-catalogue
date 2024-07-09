@@ -8,13 +8,13 @@
 namespace transport_router {
 
 	constexpr static double METERS_PER_KM = 1000.0;
-	constexpr static double MIN_PER_HOUR = 60.0;
+	constexpr static double MIN_PER_HOUR  = 60.0;
 
 	struct RouteItem {
 		std::string edge_name;
 		int span_count = 0;
 		double time = 0.0;
-		graph::EdgeType type;
+		EdgeType type;
 	};
 
 	struct RouteData {
@@ -30,16 +30,17 @@ namespace transport_router {
 
 	class TransportRouter {
 
-		using Router = graph::Router<double>;
-		using Graph = graph::DirectedWeightedGraph<double>;
-		using Vertexes = std::unordered_map<std::string_view, VertexWithMirror>;
+		using Router	= graph::Router<double>;
+		using Graph		= graph::DirectedWeightedGraph<double>;
+		using Vertexes  = std::unordered_map<std::string_view, VertexWithMirror>;
+		using EdgesInfo = std::unordered_map<graph::EdgeId, RouteItem>;
 
 	public:
-		TransportRouter(const TransportCatalogue& db);
+		explicit TransportRouter(const TransportCatalogue& db);
 
-		void SetRoutingSettings(const RoutingSettings settings);
+		void SetRoutingSettings(const RoutingSettings& settings);
 		RoutingSettings GetRoutingSettings();
-		const RouteData CalculateRoute(const std::string_view from, const std::string_view to);
+		RouteData CalculateRoute(std::string_view from, std::string_view to);
 
 	private:
 		RoutingSettings settings_;
@@ -47,6 +48,7 @@ namespace transport_router {
 		std::unique_ptr<Router> router_ = nullptr;
 		const TransportCatalogue& tc_;
 		Vertexes vertexes_;
+		EdgesInfo edges_info_;
 
 		void BuildGraph();
 	};

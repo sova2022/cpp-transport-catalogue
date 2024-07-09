@@ -28,7 +28,7 @@ namespace json {
         Node GetStatForStopRequest(const std::string_view name, int request_id);
         Node GetMapScheme(RequestHandler& handler, int request_id);
         Node GetRouteInfo(const std::string_view from, const std::string_view to, int request_id);
-        void ParseAndPrintStat([[maybe_unused]] RequestHandler& handler, std::ostream& out);
+        void ParseAndPrintStat(RequestHandler& handler, std::ostream& out);
 
     private:
         std::unique_ptr<Document> document_;
