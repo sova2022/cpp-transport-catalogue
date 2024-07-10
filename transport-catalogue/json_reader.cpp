@@ -2,7 +2,7 @@
 
 inline std::set<std::string> SortBuses(const std::unordered_set<Bus*>* buses) {
     std::set<std::string> sorted;
-    for (auto bus : *buses) sorted.emplace(bus->bus_name);
+    for (Bus* bus : *buses) sorted.emplace(bus->bus_name);
     return sorted;
 }
 
@@ -32,7 +32,7 @@ namespace json {
     }
 
     void JsonReader::AddStopsDataToCatalogue() const {
-        for (auto node : GetBaseRequests()) {
+        for (const Node& node : GetBaseRequests()) {
             if (node.AsDict().at("type").AsString() == "Stop") {
 
                 std::string name = node.AsDict().at("name").AsString();
@@ -44,11 +44,11 @@ namespace json {
 
             }
         }
-        for (auto node : GetBaseRequests()) {
+        for (const Node& node : GetBaseRequests()) {
             if (node.AsDict().at("type").AsString() == "Stop") {
                 if (!node.AsDict().at("road_distances").AsDict().empty()) {
                     std::string name = node.AsDict().at("name").AsString();
-                    for (auto stop : node.AsDict().at("road_distances").AsDict()) {
+                    for (const std::pair<const std::string, const Node>& stop : node.AsDict().at("road_distances").AsDict()) {
                         std::string to_stop = stop.first;
                         Distance dist(node.AsDict().at("road_distances").AsDict().at(to_stop).AsInt());
                         const_cast<TransportCatalogue&>(handler_->GetDataBase())
@@ -61,12 +61,12 @@ namespace json {
     }
 
     void JsonReader::AddBusesDataToCatalogue() const {
-        for (auto node : GetBaseRequests()) {
+        for (const Node& node : GetBaseRequests()) {
             if (node.AsDict().at("type").AsString() == "Bus") {
                 std::string name = node.AsDict().at("name").AsString();
                 std::vector<std::string> stops;
                 auto stops_node = node.AsDict().at("stops").AsArray();
-                for (auto stop : stops_node) {
+                for (const Node& stop : stops_node) {
                     stops.emplace_back(stop.AsString());
                 }
                 TypeRoute type = { node.AsDict().at("is_roundtrip").AsBool(), handler_->GetDataBase().FindStop(stops.back()) };
@@ -125,7 +125,7 @@ namespace json {
 
         renderer.underlayer_color = HandlingColor(dict.at("underlayer_color"));
         const auto& color_palette = dict.at("color_palette").AsArray();
-        for (const auto& color : color_palette) {
+        for (const Node& color : color_palette) {
             renderer.color_palette.emplace_back(HandlingColor(color));
         }
     }
@@ -162,7 +162,7 @@ namespace json {
             return answer.Build();
         }
         auto buses_container = handler_->GetBusesByStop(name);
-        for (auto bus_name : SortBuses(buses_container)) {
+        for (std::string bus_name : SortBuses(buses_container)) {
             buses.emplace_back(Node{ bus_name });
         }
         answer.Key("buses").Value(buses)
@@ -195,7 +195,7 @@ namespace json {
         }
 
         Array items;
-        for (const auto& item : route_data.items) {
+        for (const transport_router::RouteItem& item : route_data.items) {
             Dict items_map;
             if (item.type == EdgeType::TRAVEL) {
                 items_map["type"] = std::string("Bus");
@@ -217,10 +217,10 @@ namespace json {
         return answer.Build();
     }
 
-    void JsonReader::ParseAndPrintStat([[maybe_unused]] RequestHandler& handler, std::ostream& out) {
+    void JsonReader::ParseAndPrintStat(RequestHandler& handler, std::ostream& out) {
         Builder answer;
         answer.StartArray();
-        for (auto node : GetStatRequests()) {
+        for (const Node& node : GetStatRequests()) {
             int request_id = node.AsDict().at("id").AsInt();
             if (node.AsDict().at("type").AsString() == "Bus") {
                 const std::string_view name = node.AsDict().at("name").AsString();
